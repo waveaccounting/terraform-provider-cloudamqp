@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -369,6 +370,7 @@ func decodeResponseJSON(resp *http.Response, successV, failureV interface{}) err
 		}
 	} else {
 		if failureV != nil {
+			log.Printf("%+v", resp)
 			return decodeResponseBodyJSON(resp, failureV)
 		}
 	}
@@ -379,5 +381,6 @@ func decodeResponseJSON(resp *http.Response, successV, failureV interface{}) err
 // to by v.
 // Caller must provide a non-nil v and close the resp.Body.
 func decodeResponseBodyJSON(resp *http.Response, v interface{}) error {
+	log.Printf("Raw = %+v", resp)
 	return json.NewDecoder(resp.Body).Decode(v)
 }

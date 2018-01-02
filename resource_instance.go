@@ -130,7 +130,7 @@ func resourceInstanceUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	_, _, err = client.Instances.Update(id, params)
 	if err != nil {
-		return err
+		return fmt.Errorf("[DEBUG] Error updating CloudAMQP instance %s, returning err: %s", d.Get("name").(string), err.Error())
 	}
 
 	return resourceInstanceRead(d, meta)

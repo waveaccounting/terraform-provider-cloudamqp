@@ -1,6 +1,7 @@
 package cloudamqp
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -36,7 +37,8 @@ func (s *InstanceService) List() ([]Instance, *http.Response, error) {
 	instances := new([]Instance)
 	apiError := new(APIError)
 	resp, err := s.sling.New().Get("").Receive(instances, apiError)
-	return *instances, resp, err
+	apiError.Status = resp.StatusCode
+	return *instances, resp, relevantError(err, *apiError)
 }
 
 // Get a CloudAMQP instance.
@@ -45,6 +47,7 @@ func (s *InstanceService) Get(id int) (*Instance, *http.Response, error) {
 	instance := new(Instance)
 	apiError := new(APIError)
 	resp, err := s.sling.New().Path("instances/").Get(strconv.Itoa(id)).Receive(instance, apiError)
+	apiError.Status = resp.StatusCode
 	return instance, resp, relevantError(err, *apiError)
 }
 
@@ -64,6 +67,7 @@ func (s *InstanceService) Create(params *CreateInstanceParams) (*Instance, *http
 	instance := new(Instance)
 	apiError := new(APIError)
 	resp, err := s.sling.New().Post("instances").BodyForm(params).Receive(instance, apiError)
+	apiError.Status = resp.StatusCode
 	return instance, resp, relevantError(err, *apiError)
 }
 
@@ -79,7 +83,12 @@ type UpdateInstanceParams struct {
 func (s *InstanceService) Update(id int, params *UpdateInstanceParams) (*Instance, *http.Response, error) {
 	instance := new(Instance)
 	apiError := new(APIError)
+	// TODO: Figure out if this is actually returning errors correctly
 	resp, err := s.sling.New().Path("instances/").Put(strconv.Itoa(id)).BodyForm(params).Receive(instance, apiError)
+	log.Printf("%+v", resp)
+	log.Printf("%+v", err)
+	apiError.Status = resp.StatusCode
+	log.Printf("apiError = %+v", apiError)
 	return instance, resp, relevantError(err, *apiError)
 }
 
@@ -88,5 +97,6 @@ func (s *InstanceService) Update(id int, params *UpdateInstanceParams) (*Instanc
 func (s *InstanceService) Delete(id int) (*http.Response, error) {
 	apiError := new(APIError)
 	resp, err := s.sling.New().Path("instances/").Delete(strconv.Itoa(id)).Receive(nil, apiError)
+	apiError.Status = resp.StatusCode
 	return resp, relevantError(err, *apiError)
 }
